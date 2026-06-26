@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %> — Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <span class="logo">🎧 Support Dispatcher</span>
+      <span class="badge" id="connection-badge">●&nbsp;Verbinden…</span>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ── QUEUE ── -->
+    <section class="card">
+      <div class="card-header">
+        <h2>🟡 Warteraum <span class="pill" id="queue-count"><%= queue.length %></span></h2>
+        <div class="card-actions">
+          <button class="btn btn-danger" onclick="clearQueue()">Queue leeren</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="queue-table">
+          <thead>
+            <tr><th>User</th><th>Wartezeit</th></tr>
+          </thead>
+          <tbody id="queue-body">
+            <% if (queue.length === 0) { %>
+              <tr class="empty-row"><td colspan="2">Niemand wartet</td></tr>
+            <% } else { %>
+              <% queue.forEach(q => { %>
+                <tr>
+                  <td class="user-cell">
+                    <% if (q.avatarURL) { %><img class="avatar" src="<%= q.avatarURL %>" /><% } %>
+                    <%= q.username %>
+                  </td>
+                  <td class="wait-cell" data-joined="<%= new Date(q.joinedAt).getTime() %>">
+                    <%= Math.floor(q.waitMs / 1000) %>s
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── SUPPORT ROOMS ── -->
+    <section class="card">
+      <div class="card-header">
+        <h2>🎙 Support Räume</h2>
+      </div>
+      <div class="rooms-grid" id="rooms-grid">
+        <% rooms.forEach(r => { %>
+          <div class="room-card <%= r.session ? 'room-active' : 'room-free' %>" id="room-<%= r.roomId %>">
+            <div class="room-name"><%= r.channelName || r.roomId %></div>
+            <div class="room-status"><%= r.session ? '🔴 Belegt' : '🟢 Frei' %></div>
+            <% if (r.session) { %>
+              <div class="room-info">
+                <div>👮 <strong><%= r.session.supporterName %></strong></div>
+                <div>👤 <strong><%= r.session.citizenName %></strong></div>
+                <div class="runtime" data-started="<%= new Date(r.session.startedAt).getTime() %>">
+                  ⏱ <%= Math.floor(r.session.runtimeMs / 1000) %>s
+                </div>
+              </div>
+              <button class="btn btn-sm btn-danger" onclick="endSupport('<%= r.roomId %>')">Beenden</button>
+            <% } %>
+            <button class="btn btn-sm btn-secondary mt-1" onclick="resetChannel('<%= r.roomId %>')">Reset</button>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- ── STATISTIK ── -->
+    <section class="card">
+      <div class="card-header">
+        <h2>📊 Statistik</h2>
+        <button class="btn btn-secondary btn-sm" onclick="loadStats()">Aktualisieren</button>
+      </div>
+      <div id="stats-area">
+        <div class="stats-overview">
+          <div class="stat-box">
+            <div class="stat-label">Gesamt Fälle</div>
+            <div class="stat-value" id="stat-total">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Ø Wartezeit</div>
+            <div class="stat-value" id="stat-avg">—</div>
+          </div>
+        </div>
+        <h3 class="ranking-title">🏆 Supporter Ranking</h3>
+        <table id="ranking-table">
+          <thead>
+            <tr><th>#</th><th>Supporter</th><th>Fälle</th><th>Gesamtzeit</th></tr>
+          </thead>
+          <tbody id="ranking-body"><tr class="empty-row"><td colspan="4">Lade…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── SETTINGS ── -->
+    <section class="card">
+      <div class="card-header">
+        <h2>⚙️ Einstellungen</h2>
+      </div>
+      <form id="settings-form" class="settings-form">
+        <label>
+          Dispatch Delay (ms)
+          <input type="number" id="delay-input" name="dispatchDelay" min="1000" max="60000" step="1000" value="10000" />
+        </label>
+        <label>
+          Dashboard Secret
+          <input type="password" id="secret-input" placeholder="Bearer token" autocomplete="current-password" />
+        </label>
+        <button type="button" class="btn btn-secondary" onclick="saveSecret()">Token speichern</button>
+        <button type="submit" class="btn btn-primary">Delay speichern</button>
+      </form>
+      <p class="secret-hint">Das Token wird nur im Browser gespeichert (localStorage) und für alle Schreib-Aktionen benötigt.</p>
+    </section>
+
+    <!-- ── AUDIO UPLOAD ── -->
+    <section class="card">
+      <div class="card-header">
+        <h2>🔊 Audio Upload</h2>
+      </div>
+      <div class="upload-grid">
+        <% ['waiting', 'busy', 'offline'].forEach(name => { %>
+          <div class="upload-item">
+            <label class="upload-label"><strong><%= name %>.mp3</strong></label>
+            <input type="file" id="upload-<%= name %>" accept="audio/mp3,audio/mpeg" />
+            <button class="btn btn-secondary btn-sm" onclick="uploadAudio('<%= name %>')">Hochladen</button>
+            <span class="upload-status" id="upload-status-<%= name %>"></span>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
