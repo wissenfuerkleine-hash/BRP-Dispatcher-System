@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "start": "tsc && node dist/index.js"
+    "start": "ts-node src/index.ts"
   },
   "dependencies": {
     "@discordjs/voice": "0.19.2",
@@ -15,6 +14,7 @@
   },
   "devDependencies": {
     "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2"
   }
 }
