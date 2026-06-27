@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "tsx src/index.ts"
+    "start": "tsx --host 0.0.0.0 src/index.ts"
   },
   "dependencies": {
     "@discordjs/voice": "0.19.2",
