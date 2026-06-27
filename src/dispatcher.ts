@@ -109,7 +109,8 @@ export async function processQueue(client: Client, guild: Guild): Promise<void> 
     try {
       const currentCitizen = guild.members.cache.get(citizenId);
       if (!currentCitizen || currentCitizen.voice.channelId !== WAITING_ROOM_ID) {
-        waitingQueue.splice(waitingQueue.indexOf(citizenId), 1);
+        const i = waitingQueue.indexOf(citizenId);
+        if (i !== -1) waitingQueue.splice(i, 1);
         pendingDispatch.delete(citizenId);
         return;
       }
@@ -135,7 +136,8 @@ export async function processQueue(client: Client, guild: Guild): Promise<void> 
 
       await lockRoom(room, guild);
 
-      waitingQueue.splice(waitingQueue.indexOf(citizenId), 1);
+      const qi = waitingQueue.indexOf(citizenId);
+      if (qi !== -1) waitingQueue.splice(qi, 1);
       pendingDispatch.delete(citizenId);
 
       await sendLog(

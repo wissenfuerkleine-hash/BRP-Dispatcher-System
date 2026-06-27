@@ -1,5 +1,6 @@
 import ffmpegStatic from 'ffmpeg-static';
 import path from 'path';
+import fs from 'fs';
 
 // Make the bundled ffmpeg binary available in PATH so prism-media finds it
 if (ffmpegStatic) {
@@ -19,7 +20,14 @@ import {
 } from '@discordjs/voice';
 import { VoiceBasedChannel } from 'discord.js';
 
-const WAITING_MUSIC_PATH = path.resolve('audio/waiting.mp3');
+const AUDIO_DIR = path.resolve('audio');
+
+function getRandomTrack(): string {
+  const files = fs.readdirSync(AUDIO_DIR).filter(f => f.endsWith('.mp3'));
+  if (files.length === 0) throw new Error(`[Audio] Keine MP3-Dateien in ${AUDIO_DIR} gefunden`);
+  const pick = files[Math.floor(Math.random() * files.length)];
+  return path.join(AUDIO_DIR, pick as string);
+}
 
 let looping = false;
 
@@ -30,7 +38,9 @@ function buildLoopingPlayer() {
 
   const playNext = () => {
     if (!looping) return;
-    const resource = createAudioResource(WAITING_MUSIC_PATH);
+    const track = getRandomTrack();
+    console.log('[Audio] Spiele:', path.basename(track));
+    const resource = createAudioResource(track);
     player.play(resource);
   };
 
