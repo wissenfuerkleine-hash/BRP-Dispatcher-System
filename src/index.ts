@@ -19,7 +19,6 @@ import { sendLog } from './logger.js';
 import { startWaitingMusic, stopWaitingMusic } from './audio.js';
 import { registerCommands } from './commands/register.js';
 import { execute as executeEndsupport } from './commands/endsupport.js';
-import * as http from 'http'; // Für den Health-Check-Server importiert
 
 const token = process.env.DISCORD_TOKEN;
 if (!token) {
@@ -137,16 +136,3 @@ process.on('unhandledRejection', (err) => {
 });
 
 client.login(token);
-
-// ==========================================
-// RAILWAY HEALTH-CHECK SERVER (PORT 3000)
-// ==========================================
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Bot is running!');
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[Health-Check] Server läuft auf Port ${PORT}`);
-});
