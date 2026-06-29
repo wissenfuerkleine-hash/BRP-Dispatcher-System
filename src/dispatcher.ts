@@ -13,6 +13,9 @@ import {
 import { waitingQueue, activeSessions, pendingDispatch, SupportSession } from './state.js';
 import { sendLog } from './logger.js';
 
+// Die ID deiner Bürger-Rolle
+const CITIZEN_ROLE_ID = '1514285810889916426';
+
 interface AvailableSlot {
   room: VoiceChannel;
   supporter: GuildMember;
@@ -34,8 +37,9 @@ function findAvailableSlot(guild: Guild): AvailableSlot | 'busy' | 'offline' {
 
     if (activeSessions.has(roomId)) continue;
 
-    const hasCitizen = channel.members.some(
-      m => !m.roles.cache.has(SUPPORTER_ROLE_ID),
+    // KORREKTUR: Ein Raum gilt NUR DANN als belegt, wenn ein echter Bürger (mit der ID) drin ist
+    const hasCitizen = channel.members.some(m => 
+      m.roles.cache.has(CITIZEN_ROLE_ID)
     );
     if (hasCitizen) continue;
 
